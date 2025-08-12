@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, Send, Bookmark } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { TattooPost } from '@/types/tattoo';
 
@@ -59,19 +59,20 @@ export function CompactTattooCard({
           <span className="text-white text-xs drop-shadow-sm">{artist.name}</span>
         </div>
 
-        {/* Descripción abajo izquierda */}
+        {/* Descripción y hashtags abajo izquierda */}
         <div className="absolute left-2 bottom-2 right-14">
           <h3 className="text-white text-sm font-semibold drop-shadow line-clamp-2">{title}</h3>
+          {tags?.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {tags.slice(0,3).map((t, idx)=>(
+                <span key={idx} className="bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">#{t}</span>
+              ))}
+              {tags.length > 3 && (
+                <span className="text-[10px] text-white/80">+{tags.length - 3}</span>
+              )}
+            </div>
+          )}
         </div>
-
-        {/* Hashtags a la derecha */}
-        {tags?.length > 0 && (
-          <div className="absolute top-1/2 -translate-y-1/2 right-2 flex flex-col items-end gap-1">
-            {tags.slice(0,3).map((t, idx)=>(
-              <span key={idx} className="bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">#{t}</span>
-            ))}
-          </div>
-        )}
 
         {/* Acciones alineadas a la derecha */}
         <div className="absolute bottom-2 right-2 flex flex-col items-center gap-2" onClick={(e)=>e.stopPropagation()}>
