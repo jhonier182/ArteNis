@@ -1,13 +1,26 @@
-// Mock data para simular posts de tatuajes tipo Pinterest
+// Mock data con imágenes locales de la carpeta public para simular posts reales
+const localImages = [
+  '/descarga.jpg',
+  '/descarga (1).jpg',
+  '/descarga (2).jpg',
+  '/descarga (3).jpg',
+  '/descarga (4).jpg',
+  '/descarga (5).jpg',
+  '/descarga (6).jpg',
+  '/descarga (7).jpg',
+  '/inicio.jpg',
+  '/tatuadora.jpg',
+];
+
 export const mockTattooData = [
   {
     id: '1',
-    imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop',
+    imageUrl: localImages[0],
     title: 'Tatuaje de Rosa Realista en Brazo',
     artist: {
       id: 'artist1',
       name: 'InkMaster_Sofia',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b8d5?w=100&h=100&fit=crop&crop=face',
+      avatar: '/tatuadora.jpg',
       isVerified: true
     },
     likes: 234,
@@ -17,7 +30,7 @@ export const mockTattooData = [
   },
   {
     id: '2',
-    imageUrl: 'https://images.unsplash.com/photo-1565022093792-dc53d7d2b7a0?w=400&h=500&fit=crop',
+    imageUrl: localImages[1],
     title: 'Mandala Geométrico Minimalista',
     artist: {
       id: 'artist2',
@@ -31,12 +44,12 @@ export const mockTattooData = [
   },
   {
     id: '3',
-    imageUrl: 'https://images.unsplash.com/photo-1581281863883-2469417a1668?w=400&h=700&fit=crop',
+    imageUrl: localImages[2],
     title: 'Dragón Japonés Tradicional',
     artist: {
       id: 'artist3',
       name: 'TokyoInk_Master',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
+      avatar: '/perfil.jpg',
       isVerified: true
     },
     likes: 445,
@@ -46,7 +59,7 @@ export const mockTattooData = [
   },
   {
     id: '4',
-    imageUrl: 'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=400&h=600&fit=crop',
+    imageUrl: localImages[3],
     title: 'Líneas Finas Blackwork',
     artist: {
       id: 'artist4',
@@ -60,12 +73,12 @@ export const mockTattooData = [
   },
   {
     id: '5',
-    imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=550&fit=crop',
+    imageUrl: localImages[4],
     title: 'Acuarela Abstracta en Espalda',
     artist: {
       id: 'artist5',
       name: 'WatercolorTats',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
+      avatar: '/tatuadora.jpg',
       isVerified: false
     },
     likes: 312,
@@ -75,7 +88,7 @@ export const mockTattooData = [
   },
   {
     id: '6',
-    imageUrl: 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400&h=650&fit=crop',
+    imageUrl: localImages[5],
     title: 'Retrato Hiperrealista',
     artist: {
       id: 'artist6',
@@ -89,7 +102,7 @@ export const mockTattooData = [
   },
   {
     id: '7',
-    imageUrl: 'https://images.unsplash.com/photo-1608057208132-16fe33d7d069?w=400&h=500&fit=crop',
+    imageUrl: localImages[6],
     title: 'Pequeño Tatuaje de Luna',
     artist: {
       id: 'artist7',
@@ -103,12 +116,12 @@ export const mockTattooData = [
   },
   {
     id: '8',
-    imageUrl: 'https://images.unsplash.com/photo-1581281863883-2469417a1668?w=400&h=750&fit=crop',
+    imageUrl: localImages[7],
     title: 'Sleeve Completo Biomecánico',
     artist: {
       id: 'artist8',
       name: 'CyberTattoos',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face',
+      avatar: '/perfil.jpg',
       isVerified: true
     },
     likes: 892,
@@ -118,7 +131,7 @@ export const mockTattooData = [
   },
   {
     id: '9',
-    imageUrl: 'https://images.unsplash.com/photo-1599582909646-64f8c2ed1d63?w=400&h=600&fit=crop',
+    imageUrl: localImages[8],
     title: 'Flor de Cerezo Delicada',
     artist: {
       id: 'artist9',
@@ -132,12 +145,12 @@ export const mockTattooData = [
   },
   {
     id: '10',
-    imageUrl: 'https://images.unsplash.com/photo-1565022093792-dc53d7d2b7a0?w=400&h=800&fit=crop',
+    imageUrl: localImages[9],
     title: 'Tribal Moderno Geométrico',
     artist: {
       id: 'artist10',
       name: 'ModernTribal',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+      avatar: '/tatuadora.jpg',
       isVerified: true
     },
     likes: 445,
@@ -159,12 +172,12 @@ export const generateMoreTattoos = (startId: number, count: number = 10) => {
     
     return {
       id: id.toString(),
-      imageUrl: `https://images.unsplash.com/photo-${1500000000000 + Math.floor(Math.random() * 100000000000)}?w=400&h=${Math.floor(Math.random() * 300) + 500}&fit=crop`,
+      imageUrl: localImages[id % localImages.length],
       title: `Tatuaje ${style} #${id}`,
       artist: {
         id: `artist${id}`,
         name: `Artist_${id}`,
-        avatar: Math.random() > 0.5 ? `https://images.unsplash.com/photo-${1400000000000 + Math.floor(Math.random() * 100000000000)}?w=100&h=100&fit=crop&crop=face` : undefined,
+        avatar: Math.random() > 0.5 ? '/perfil.jpg' : undefined,
         isVerified: Math.random() > 0.7
       },
       likes: Math.floor(Math.random() * 1000) + 10,
