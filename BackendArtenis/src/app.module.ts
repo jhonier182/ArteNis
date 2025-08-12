@@ -66,7 +66,7 @@ import { BookingController } from '@interfaces/rest/booking.controller';
     // Controladores REST principales
     AppController,
     UserController,
-    PostController,
+    // PostController se declara en PostModule
     BookingController,
   ],
   providers: [],

@@ -201,7 +201,8 @@ export class PostRepositoryImpl implements PostRepository {
     const qb = this.postRepo.createQueryBuilder('post')
       .innerJoin('board_posts', 'bp', 'bp.postId = post.id')
       .innerJoin('boards', 'b', 'b.id = bp.boardId AND b.userId = :uid', { uid: userId })
-      .orderBy('bp.createdAt', 'DESC')
+      .addSelect('bp.createdAt', 'bp_createdAt')
+      .orderBy('bp_createdAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
     const [rows, total] = await qb.getManyAndCount();

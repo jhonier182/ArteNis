@@ -3,13 +3,17 @@ import { useEffect } from 'react';
 import { useAuthStore } from '@/store/auth';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Settings, Grid, Bookmark, Image } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect as useEffectReact } from 'react';
+import { postsService } from '@/services/posts';
 
 export default function ProfilePage() {
   const { user, isAuthenticated, isLoading, checkAuth } = useAuthStore();
   const [tab, setTab] = useState<'posts'|'saved'|'artist'>('saved');
   const [postsCount, setPostsCount] = useState<number>(0);
   const [appointmentsCount, setAppointmentsCount] = useState<number>(0);
+  const [saved, setSaved] = useState<any[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -40,6 +44,20 @@ export default function ProfilePage() {
     };
     loadCounts();
   }, [user]);
+
+  useEffectReact(() => {
+    if (tab !== 'saved' || !user) return;
+    let cancelled = false;
+    const load = async () => {
+      const resp = await postsService.getMySaved(page, 24);
+      if (!cancelled) {
+        setSaved((prev) => [...prev, ...resp.posts]);
+        setHasMore(page < resp.totalPages);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [tab, page, user]);
 
   if (isLoading) return <div className="p-6">Cargando…</div>;
   if (!isAuthenticated) return <div className="p-6">Inicia sesión para ver tu perfil</div>;
@@ -126,11 +144,16 @@ export default function ProfilePage() {
           )}
           {tab === 'saved' && (
             <div className="columns-3 gap-2 [column-fill:_balance]">
-              {Array.from({length:8}).map((_,i)=>(
-                <div key={i} className="mb-2 break-inside-avoid overflow-hidden rounded-lg bg-white/5">
-                  <img src="/descarga (2).jpg" alt="saved" className="w-full h-auto object-cover"/>
+              {saved.map((p,i)=>(
+                <div key={`${p.id}-${i}`} className="mb-2 break-inside-avoid overflow-hidden rounded-lg bg-white/5">
+                  <img src={(p.mediaUrls && p.mediaUrls[0]) || '/descarga (2).jpg'} alt="saved" className="w-full h-auto object-cover"/>
                 </div>
               ))}
+              {hasMore && (
+                <div className="col-span-3 text-center mt-4">
+                  <button onClick={()=>setPage((x)=>x+1)} className="px-4 py-2 rounded bg-white/10">Cargar más</button>
+                </div>
+              )}
             </div>
           )}
           {tab === 'artist' && (

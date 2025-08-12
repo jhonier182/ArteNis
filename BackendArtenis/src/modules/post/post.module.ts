@@ -8,6 +8,7 @@ import { CommentEntity } from '@infrastructure/database/mysql/entities/comment.e
 import { LikeEntity } from '@infrastructure/database/mysql/entities/like.entity';
 import { MediaEntity } from '@infrastructure/database/mysql/entities/media.entity';
 import { BoardPostEntity } from '@infrastructure/database/mysql/entities/board-post.entity';
+import { BoardEntity } from '@infrastructure/database/mysql/entities/board.entity';
 import { PostRepository } from '@domain/post/repositories/post.repository';
 import { PostRepositoryImpl } from '@infrastructure/database/mysql/repositories/post.repository.impl';
 import { PostMapper } from '@application/post/mappers/post.mapper';
@@ -18,14 +19,15 @@ import { GetPostHandler } from '@application/post/queries/get-post.handler';
 import { GetUserPostsHandler } from '@application/post/queries/get-user-posts.handler';
 import { GetFeedHandler } from '@application/post/queries/get-feed.handler';
 import { GetSavedPostsHandler } from '@application/post/queries/get-saved-posts.handler';
+import { PostController } from '@interfaces/rest/post.controller';
 import { MediaService } from '@modules/post/services/media.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([PostEntity, CommentEntity, LikeEntity, MediaEntity, BoardPostEntity]),
+    TypeOrmModule.forFeature([PostEntity, CommentEntity, LikeEntity, MediaEntity, BoardPostEntity, BoardEntity]),
     CqrsModule,
   ],
-  controllers: [],
+  controllers: [PostController],
   providers: [
     { provide: 'PostRepository', useClass: PostRepositoryImpl },
     PostMapper,

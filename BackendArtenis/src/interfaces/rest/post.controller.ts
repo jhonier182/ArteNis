@@ -18,6 +18,8 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
+import { RolesGuard } from '@common/guards/roles.guard';
+import { Roles } from '@common/decorators/roles.decorator';
 import { CurrentUser } from '@common/decorators/current-user.decorator';
 import { Public } from '@common/decorators/public.decorator';
 
@@ -39,6 +41,12 @@ import { PostResponseDto } from './dto/post-response.dto';
 
 // Mappers
 import { PostMapper } from '@application/post/mappers/post.mapper';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { LikeEntity } from '@infrastructure/database/mysql/entities/like.entity';
+import { CommentEntity } from '@infrastructure/database/mysql/entities/comment.entity';
+import { BoardEntity } from '@infrastructure/database/mysql/entities/board.entity';
+import { BoardPostEntity } from '@infrastructure/database/mysql/entities/board-post.entity';
 
 @ApiTags('posts')
 @Controller('posts')
@@ -47,6 +55,10 @@ export class PostController {
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
     private readonly postMapper: PostMapper,
+    @InjectRepository(LikeEntity) private readonly likeRepo: Repository<LikeEntity>,
+    @InjectRepository(CommentEntity) private readonly commentRepo: Repository<CommentEntity>,
+    @InjectRepository(BoardEntity) private readonly boardRepo: Repository<BoardEntity>,
+    @InjectRepository(BoardPostEntity) private readonly boardPostRepo: Repository<BoardPostEntity>,
   ) {}
 
   @Get('feed')
@@ -99,7 +111,8 @@ export class PostController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('artist')
   @UseInterceptors(FilesInterceptor('files', 10))
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
@@ -198,7 +211,8 @@ export class PostController {
   }
 
   @Put(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('artist')
   @ApiBearerAuth()
   @ApiOperation({ 
     summary: 'Actualizar publicación',
@@ -232,7 +246,8 @@ export class PostController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('artist')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ 
@@ -249,5 +264,48 @@ export class PostController {
   ): Promise<void> {
     const command = new DeletePostCommand(id, user.id);
     await this.commandBus.execute(command);
+  }
+
+  // Interacciones
+  @Post(':id/like')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async like(@Param('id') postId: string, @CurrentUser() user: any) {
+    const exists = await this.likeRepo.findOne({ where: { postId, userId: user.id } as any });
+    if (!exists) {
+      await this.likeRepo.save(this.likeRepo.create({ postId, userId: user.id } as any));
+    }
+    return { liked: true };
+  }
+
+  @Delete(':id/like')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async unlike(@Param('id') postId: string, @CurrentUser() user: any) {
+    await this.likeRepo.delete({ postId, userId: user.id } as any);
+    return { liked: false };
+  }
+
+  @Post(':id/save')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async savePost(@Param('id') postId: string, @CurrentUser() user: any) {
+    // default board per user
+    let board = await this.boardRepo.findOne({ where: { userId: user.id, name: 'Favoritos' } });
+    if (!board) {
+      board = await this.boardRepo.save(this.boardRepo.create({ userId: user.id, name: 'Favoritos' }));
+    }
+    const exists = await this.boardPostRepo.findOne({ where: { boardId: board.id, postId } });
+    if (!exists) await this.boardPostRepo.save(this.boardPostRepo.create({ boardId: board.id, postId }));
+    return { saved: true };
+  }
+
+  @Delete(':id/save')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async unsavePost(@Param('id') postId: string, @CurrentUser() user: any) {
+    const board = await this.boardRepo.findOne({ where: { userId: user.id, name: 'Favoritos' } });
+    if (board) await this.boardPostRepo.delete({ boardId: board.id, postId } as any);
+    return { saved: false };
   }
 }
