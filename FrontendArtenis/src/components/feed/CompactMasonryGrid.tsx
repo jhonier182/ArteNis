@@ -92,6 +92,7 @@ export function CompactMasonryGrid({
                 key={post.id}
                 {...post}
                 onLike={onLike}
+                onSave={onSave}
                 onOpenDetail={handleOpenDetail}
               />
             ))}

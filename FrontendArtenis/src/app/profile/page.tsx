@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Settings, Grid, Bookmark, Image } from 'lucide-react';
 import { useState, useEffect as useEffectReact } from 'react';
 import { postsService } from '@/services/posts';
+import { useSavedStore } from '@/store/saved';
 
 export default function ProfilePage() {
   const { user, isAuthenticated, isLoading, checkAuth } = useAuthStore();
@@ -12,6 +13,7 @@ export default function ProfilePage() {
   const [postsCount, setPostsCount] = useState<number>(0);
   const [appointmentsCount, setAppointmentsCount] = useState<number>(0);
   const [saved, setSaved] = useState<any[]>([]);
+  const localSaved = useSavedStore((s) => s.items);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const router = useRouter();
@@ -51,13 +53,20 @@ export default function ProfilePage() {
     const load = async () => {
       const resp = await postsService.getMySaved(page, 24);
       if (!cancelled) {
-        setSaved((prev) => [...prev, ...resp.posts]);
+        const merged = [...localSaved.map(ls => ({ id: ls.id, mediaUrls: [ls.imageUrl], title: ls.title })), ...resp.posts];
+        // Eliminar duplicados por id manteniendo primero el local
+        const uniqueMap = new Map<string, any>();
+        for (const p of merged) {
+          if (!uniqueMap.has(p.id)) uniqueMap.set(p.id, p);
+        }
+        const mergedUnique = Array.from(uniqueMap.values());
+        setSaved((prev) => [...prev, ...mergedUnique]);
         setHasMore(page < resp.totalPages);
       }
     };
     load();
     return () => { cancelled = true; };
-  }, [tab, page, user]);
+  }, [tab, page, user, localSaved]);
 
   if (isLoading) return <div className="p-6">Cargando…</div>;
   if (!isAuthenticated) return <div className="p-6">Inicia sesión para ver tu perfil</div>;

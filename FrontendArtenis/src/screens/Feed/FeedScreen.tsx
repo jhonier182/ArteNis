@@ -5,6 +5,7 @@ import { PinterestHeader } from '@/components/feed/PinterestHeader';
 import { CompactMasonryGrid } from '@/components/feed/CompactMasonryGrid';
 import { BottomNavigation } from '@/components/navigation/BottomNavigation';
 import { mockTattooData, generateMoreTattoos } from '@/data/mockTattoos';
+import { useSavedStore } from '@/store/saved';
 import { TattooPost } from '@/types/tattoo';
 
 export function FeedScreen() {
@@ -15,6 +16,7 @@ export function FeedScreen() {
   const [hasMore, setHasMore] = useState(true);
   const [activeTab, setActiveTab] = useState('home');
   const [headerTab, setHeaderTab] = useState<'explore' | 'foryou'>('explore');
+  const toggleSave = useSavedStore((s) => s.toggleSave);
 
   useEffect(() => {}, []);
 
@@ -34,8 +36,9 @@ export function FeedScreen() {
   };
 
   const handleSave = (id: string) => {
-    console.log('Saved tattoo:', id);
-    // Aquí iría la lógica para guardar en boards
+    const item = tattooData.find(t => t.id === id);
+    if (!item) return;
+    toggleSave({ id: item.id, imageUrl: item.imageUrl, title: item.title });
   };
 
   const handleShare = (id: string) => {

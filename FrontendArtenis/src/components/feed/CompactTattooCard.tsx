@@ -7,6 +7,7 @@ import { TattooPost } from '@/types/tattoo';
 
 interface CompactTattooCardProps extends TattooPost {
   onLike: (id: string) => void;
+  onSave?: (id: string) => void;
   onOpenDetail: (post: TattooPost) => void;
 }
 
@@ -21,6 +22,7 @@ export function CompactTattooCard({
   style,
   onLike, 
   onOpenDetail,
+  onSave,
   ...post
 }: CompactTattooCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -99,7 +101,10 @@ export function CompactTattooCard({
           >
             <Send size={18} className="text-gray-700" />
           </button>
-          <button className="w-9 h-9 rounded-full bg-white/90 hover:bg-white flex items-center justify-center">
+          <button
+            className="w-9 h-9 rounded-full bg-white/90 hover:bg-white flex items-center justify-center"
+            onClick={() => onSave?.(id)}
+          >
             <Bookmark size={18} className="text-gray-700" />
           </button>
         </div>
