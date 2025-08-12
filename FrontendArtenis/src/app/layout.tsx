@@ -119,6 +119,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
           
           {/* Toast notifications */}
           <Toaster />
+          
+          {/* Contenedor temporal para toasts personalizados */}
+          <div id="toast-container" className="fixed top-4 right-4 z-50 space-y-2"></div>
         </Providers>
       </body>
     </html>

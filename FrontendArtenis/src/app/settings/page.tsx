@@ -1,112 +1,49 @@
-"use client";
-import { useState } from 'react';
+'use client';
+
+import { SettingsMenu } from '@/components/settings/SettingsMenu';
+import { HiArrowLeft } from 'react-icons/hi';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/auth';
-import { userService } from '@/services/user';
-import { ArrowLeft } from 'lucide-react';
 
 export default function SettingsPage() {
-  const { user, updateUser } = useAuthStore();
   const router = useRouter();
-  const [firstName, setFirstName] = useState(user?.firstName || '');
-  const [lastName, setLastName] = useState(user?.lastName || '');
-  const [bio, setBio] = useState(user?.bio || '');
-  const [phone, setPhone] = useState(user?.phone || '');
-  const [language, setLanguage] = useState(user?.language || 'es');
-  const [role, setRole] = useState<'user' | 'artist' | 'admin'>((user?.role as any) || 'user');
-  const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-
-  const onSave = async () => {
-    setSaving(true);
-    try {
-      const updated = await userService.updateProfile({ firstName, lastName, bio, phone, language, role });
-      updateUser(updated);
-      router.push('/profile');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const onAvatarChange: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
-    if (!e.target.files?.[0]) return;
-    const form = new FormData();
-    form.append('file', e.target.files[0]);
-    setUploading(true);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1'}/users/avatar`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('artenis_token') || ''}`,
-        },
-        body: form,
-      });
-      const data = await res.json();
-      const wrapped = data?.data ?? data;
-      updateUser(wrapped);
-    } finally {
-      setUploading(false);
-    }
-  };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="max-w-md mx-auto px-4 py-6">
-        <button onClick={() => router.back()} className="p-2 rounded-full bg-white/10 inline-flex items-center gap-2 mb-4">
-          <ArrowLeft size={18} />
-          <span>Volver</span>
-        </button>
-
-        <h2 className="text-2xl font-semibold mb-4">Configuración</h2>
-
-        <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            <img src={user?.avatar || '/favicon.ico'} alt="avatar" className="w-16 h-16 rounded-full object-cover" />
-            <label className="inline-flex items-center gap-2 cursor-pointer">
-              <input type="file" accept="image/*" onChange={onAvatarChange} className="hidden" />
-              <span className="px-3 py-2 rounded bg-white/10">{uploading ? 'Subiendo…' : 'Cambiar avatar'}</span>
-            </label>
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Nombre</label>
-            <input value={firstName} onChange={(e)=>setFirstName(e.target.value)} className="w-full rounded bg-white/10 px-3 py-2 outline-none" />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Apellido</label>
-            <input value={lastName} onChange={(e)=>setLastName(e.target.value)} className="w-full rounded bg-white/10 px-3 py-2 outline-none" />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Biografía</label>
-            <textarea value={bio} onChange={(e)=>setBio(e.target.value)} className="w-full rounded bg-white/10 px-3 py-2 outline-none" rows={3} />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Teléfono</label>
-            <input value={phone} onChange={(e)=>setPhone(e.target.value)} className="w-full rounded bg-white/10 px-3 py-2 outline-none" />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Idioma</label>
-            <select value={language} onChange={(e)=>setLanguage(e.target.value)} className="w-full rounded bg-white/10 px-3 py-2 outline-none">
-              <option value="es">Español</option>
-              <option value="en">Inglés</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Rol</label>
-            <div className="flex gap-3">
-              <label className="inline-flex items-center gap-2">
-                <input type="radio" name="role" checked={role==='user'} onChange={()=>setRole('user')} /> Usuario
-              </label>
-              <label className="inline-flex items-center gap-2">
-                <input type="radio" name="role" checked={role==='artist'} onChange={()=>setRole('artist')} /> Tatuador
-              </label>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-md border-b border-slate-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => router.back()}
+                className="p-2 bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                <HiArrowLeft className="w-4 h-4 text-white" />
+              </button>
+              <h1 className="text-xl font-semibold text-white">
+                Configuración
+              </h1>
             </div>
-            <p className="text-xs text-white/60 mt-1">Al cambiar a Tatuador se creará tu perfil de artista automáticamente.</p>
           </div>
         </div>
+      </div>
 
-        <button disabled={saving} onClick={onSave} className="w-full mt-6 rounded bg-emerald-600 hover:bg-emerald-500 py-2.5 font-medium">
-          {saving ? 'Guardando…' : 'Guardar cambios'}
-        </button>
+      {/* Contenido principal */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex justify-center">
+          <div className="w-full max-w-md">
+            <SettingsMenu />
+          </div>
+        </div>
+      </div>
+
+      {/* Información adicional */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+        <div className="text-center">
+          <p className="text-slate-400 text-sm">
+            Artenis v1.0.0 • Hecho con ❤️ para tatuadores
+          </p>
+        </div>
       </div>
     </div>
   );
