@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Heart, MessageCircle, Send, Bookmark } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { TattooPost } from '@/types/tattoo';
@@ -26,6 +27,7 @@ export function CompactTattooCard({
   ...post
 }: CompactTattooCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
+  const router = useRouter();
 
   const handleCardClick = () => {
     onOpenDetail({ id, imageUrl, title, artist, likes, isLiked, tags, style, ...post });
@@ -48,7 +50,13 @@ export function CompactTattooCard({
         />
 
         {/* Artista en esquina superior izquierda */}
-        <div className="absolute top-2 left-2 flex items-center gap-2">
+        <div
+          className="absolute top-2 left-2 flex items-center gap-2"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (artist?.id) router.push(`/artist/${artist.id}`);
+          }}
+        >
           <div className="w-7 h-7 rounded-full overflow-hidden ring-2 ring-black/40">
             {artist.avatar ? (
               <img src={artist.avatar} alt={artist.name} className="w-full h-full object-cover" />
