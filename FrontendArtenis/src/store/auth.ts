@@ -160,14 +160,27 @@ export const useAuthStore = create<AuthState>()(
             state.isLoading = false;
           });
         } catch (error) {
-          // Token inválido o expirado
-          localStorage.removeItem('artenis_token');
-          set((state) => {
-            state.user = null;
-            state.token = null;
-            state.isAuthenticated = false;
-            state.isLoading = false;
-          });
+          // Intentar refresh token una vez
+          try {
+            const refreshed = await authService.refreshToken();
+            localStorage.setItem('artenis_token', refreshed.token);
+            const user = await authService.getProfile();
+            set((state) => {
+              state.user = user;
+              state.token = refreshed.token;
+              state.isAuthenticated = true;
+              state.isLoading = false;
+            });
+          } catch {
+            localStorage.removeItem('artenis_token');
+            localStorage.removeItem('artenis_refresh');
+            set((state) => {
+              state.user = null;
+              state.token = null;
+              state.isAuthenticated = false;
+              state.isLoading = false;
+            });
+          }
         }
       },
     })),

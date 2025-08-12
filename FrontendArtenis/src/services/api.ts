@@ -28,9 +28,10 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (typeof window !== 'undefined' && error.response?.status === 401) {
       localStorage.removeItem('artenis_token');
-      window.location.href = '/auth/login';
+      localStorage.removeItem('artenis_refresh');
+      // No redirigir automáticamente. Dejar que la UI muestre el CTA de login.
     }
     return Promise.reject(error);
   }

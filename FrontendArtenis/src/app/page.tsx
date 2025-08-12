@@ -9,8 +9,13 @@ export default function HomePage() {
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    checkAuth().finally(() => setChecked(true));
-  }, [checkAuth]);
+    // Solo validar si aún no estamos autenticados
+    if (!isAuthenticated) {
+      checkAuth().finally(() => setChecked(true));
+    } else {
+      setChecked(true);
+    }
+  }, [checkAuth, isAuthenticated]);
 
   const hasOnboarded = typeof window !== 'undefined' && localStorage.getItem('artenis_onboarded') === '1';
 

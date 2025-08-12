@@ -23,8 +23,9 @@ interface AuthResponse {
 export const authService = {
   async login(data: LoginRequest): Promise<AuthResponse> {
     const response = await api.post('/auth/login', data);
-    // Backend devuelve { accessToken, refreshToken, user }
-    const { accessToken, refreshToken, user } = response.data;
+    // El backend puede envolver la respuesta como { success, data: { ... } }
+    const wrapped = response.data?.data ?? response.data;
+    const { accessToken, refreshToken, user } = wrapped;
     return { user, token: accessToken, refreshToken };
   },
 
@@ -38,7 +39,8 @@ export const authService = {
 
   async getProfile(): Promise<User> {
     const response = await api.get('/users/profile');
-    return response.data;
+    const wrapped = response.data?.data ?? response.data;
+    return wrapped;
   },
 
   async logout(): Promise<void> {
@@ -52,8 +54,12 @@ export const authService = {
 
   async refreshToken(): Promise<{ token: string }> {
     const refreshToken = localStorage.getItem('artenis_refresh');
+    if (!refreshToken) {
+      throw new Error('No hay refresh token disponible');
+    }
     const response = await api.post('/auth/refresh', { refreshToken });
-    const { accessToken, refreshToken: newRefresh } = response.data;
+    const wrapped = response.data?.data ?? response.data;
+    const { accessToken, refreshToken: newRefresh } = wrapped;
     if (newRefresh) localStorage.setItem('artenis_refresh', newRefresh);
     return { token: accessToken };
   },
