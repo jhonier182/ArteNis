@@ -6,12 +6,14 @@ import { PostRepository, CreatePostData, PaginationOptions, PostsResult, FeedFil
 import { Post, PostStatus, PostType } from '@domain/post/entities/post';
 import { PostEntity } from '../entities/post.entity';
 import { MediaEntity } from '../entities/media.entity';
+import { BoardPostEntity } from '../entities/board-post.entity';
 
 @Injectable()
 export class PostRepositoryImpl implements PostRepository {
   constructor(
     @InjectRepository(PostEntity) private readonly postRepo: Repository<PostEntity>,
     @InjectRepository(MediaEntity) private readonly mediaRepo: Repository<MediaEntity>,
+    @InjectRepository(BoardPostEntity) private readonly boardPostRepo: Repository<BoardPostEntity>,
   ) {}
 
   private toDomain(e: PostEntity, mediaUrls: string[] = []): Post {
@@ -184,6 +186,22 @@ export class PostRepositoryImpl implements PostRepository {
       .where('post.status = :status', { status: PostStatus.PUBLISHED })
       .andWhere('post.location->>"$.city" LIKE :loc OR post.location->>"$.country" LIKE :loc', { loc: `%${location}%` })
       .orderBy('post.createdAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+    const [rows, total] = await qb.getManyAndCount();
+    const ids = rows.map(r => r.id);
+    const media = ids.length ? await this.mediaRepo.find({ where: { postId: In(ids) } }) : [];
+    const group: Record<string, string[]> = {};
+    for (const m of media) { (group[m.postId] ||= []).push(m.url); }
+    return { posts: rows.map(r => this.toDomain(r, group[r.id] || [])), total };
+  }
+
+  async getSavedPosts(userId: string, pagination: PaginationOptions): Promise<PostsResult> {
+    const { page, limit } = pagination;
+    const qb = this.postRepo.createQueryBuilder('post')
+      .innerJoin('board_posts', 'bp', 'bp.postId = post.id')
+      .innerJoin('boards', 'b', 'b.id = bp.boardId AND b.userId = :uid', { uid: userId })
+      .orderBy('bp.createdAt', 'DESC')
       .skip((page - 1) * limit)
       .take(limit);
     const [rows, total] = await qb.getManyAndCount();

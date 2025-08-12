@@ -2,30 +2,49 @@
 import { useEffect } from 'react';
 import { useAuthStore } from '@/store/auth';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Settings, User, ClipboardList, Heart, CreditCard, Star, MapPin, LogOut, Grid, Bookmark, Image } from 'lucide-react';
+import { ArrowLeft, Settings, Grid, Bookmark, Image } from 'lucide-react';
 import { useState } from 'react';
 
 export default function ProfilePage() {
-  const { user, isAuthenticated, isLoading, checkAuth, logout } = useAuthStore();
-  const [tab, setTab] = useState<'posts'|'saved'|'artist'>('posts');
+  const { user, isAuthenticated, isLoading, checkAuth } = useAuthStore();
+  const [tab, setTab] = useState<'posts'|'saved'|'artist'>('saved');
+  const [postsCount, setPostsCount] = useState<number>(0);
+  const [appointmentsCount, setAppointmentsCount] = useState<number>(0);
   const router = useRouter();
 
   useEffect(() => {
     if (!isAuthenticated) checkAuth();
   }, [isAuthenticated, checkAuth]);
 
+  useEffect(() => {
+    const loadCounts = async () => {
+      if (!user) return;
+      const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
+      try {
+        // Posts count (para cualquier rol)
+        const resP = await fetch(`${base}/posts/user/${user.id}?page=1&limit=1`);
+        const dataP = await resP.json();
+        const wrappedP = dataP?.data ?? dataP;
+        if (wrappedP?.total !== undefined) setPostsCount(wrappedP.total);
+      } catch {}
+      try {
+        // Citas del usuario (requiere auth)
+        const token = typeof window !== 'undefined' ? localStorage.getItem('artenis_token') : null;
+        if (token) {
+          const resA = await fetch(`${base}/bookings/appointments?page=1&limit=1`, { headers: { Authorization: `Bearer ${token}` } });
+          const dataA = await resA.json();
+          const wrappedA = dataA?.data ?? dataA;
+          if (wrappedA?.total !== undefined) setAppointmentsCount(wrappedA.total);
+        }
+      } catch {}
+    };
+    loadCounts();
+  }, [user]);
+
   if (isLoading) return <div className="p-6">Cargando…</div>;
   if (!isAuthenticated) return <div className="p-6">Inicia sesión para ver tu perfil</div>;
 
-  const menu = [
-    { icon: User, label: 'Información personal', onClick: () => {} },
-    { icon: ClipboardList, label: 'Tus pedidos', onClick: () => {} },
-    { icon: Heart, label: 'Favoritos', onClick: () => {} },
-    { icon: CreditCard, label: 'Pagos', onClick: () => {} },
-    { icon: Star, label: 'Recomendados', onClick: () => {} },
-    { icon: MapPin, label: 'Tiendas cercanas', onClick: () => {} },
-    { icon: LogOut, label: 'Cerrar sesión', onClick: () => { logout(); router.push('/auth/login'); } },
-  ];
+  // Menú eliminado
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark-900 to-black">
@@ -49,20 +68,33 @@ export default function ProfilePage() {
         </div>
 
         {/* Stats fila */}
-        <div className="mt-5 grid grid-cols-3 text-center">
-          <div>
-            <div className="text-lg font-semibold">291</div>
-            <div className="text-xs text-white/70">Posts</div>
+        {user?.role === 'artist' ? (
+          <div className="mt-5 grid grid-cols-3 text-center">
+            <div>
+              <div className="text-lg font-semibold">{postsCount}</div>
+              <div className="text-xs text-white/70">Posts</div>
+            </div>
+            <div>
+              <div className="text-lg font-semibold">{user?.followersCount ?? 0}</div>
+              <div className="text-xs text-white/70">Followers</div>
+            </div>
+            <div>
+              <div className="text-lg font-semibold">{user?.followingCount ?? 0}</div>
+              <div className="text-xs text-white/70">Following</div>
+            </div>
           </div>
-          <div>
-            <div className="text-lg font-semibold">{user?.followersCount ?? 0}</div>
-            <div className="text-xs text-white/70">Followers</div>
+        ) : (
+          <div className="mt-5 grid grid-cols-2 text-center">
+            <div>
+              <div className="text-lg font-semibold">{user?.followersCount ?? 0}</div>
+              <div className="text-xs text-white/70">Followers</div>
+            </div>
+            <div>
+              <div className="text-lg font-semibold">{user?.followingCount ?? 0}</div>
+              <div className="text-xs text-white/70">Following</div>
+            </div>
           </div>
-          <div>
-            <div className="text-lg font-semibold">{user?.followingCount ?? 0}</div>
-            <div className="text-xs text-white/70">Following</div>
-          </div>
-        </div>
+        )}
 
         {/* Acciones */}
         <div className="mt-4 flex items-center justify-center gap-3">
@@ -72,7 +104,9 @@ export default function ProfilePage() {
 
         {/* Tabs */}
         <div className="mt-6 grid grid-cols-3 gap-2">
-          <button onClick={()=>setTab('posts')} className={`flex items-center justify-center gap-2 rounded-lg py-2 ${tab==='posts'?'bg-white/15':'bg-white/5'}`}><Grid size={16}/> Posts</button>
+          {user?.role === 'artist' && (
+            <button onClick={()=>setTab('posts')} className={`flex items-center justify-center gap-2 rounded-lg py-2 ${tab==='posts'?'bg-white/15':'bg-white/5'}`}><Grid size={16}/> Posts</button>
+          )}
           <button onClick={()=>setTab('saved')} className={`flex items-center justify-center gap-2 rounded-lg py-2 ${tab==='saved'?'bg-white/15':'bg-white/5'}`}><Bookmark size={16}/> Guardados</button>
           {user?.role === 'artist' && (
             <button onClick={()=>setTab('artist')} className={`flex items-center justify-center gap-2 rounded-lg py-2 ${tab==='artist'?'bg-white/15':'bg-white/5'}`}><Image size={16}/> Artista</button>
@@ -81,7 +115,7 @@ export default function ProfilePage() {
 
         {/* Grid content */}
         <div className="mt-4">
-          {tab === 'posts' && (
+          {user?.role === 'artist' && tab === 'posts' && (
             <div className="columns-3 gap-2 [column-fill:_balance]">
               {Array.from({length:12}).map((_,i)=>(
                 <div key={i} className="mb-2 break-inside-avoid overflow-hidden rounded-lg bg-white/5">
@@ -110,19 +144,7 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {/* Menu list */}
-        <div className="mt-6 space-y-3">
-          {menu.map((item, idx) => (
-            <button
-              key={idx}
-              onClick={item.onClick}
-              className="w-full flex items-center gap-3 bg-white/5 hover:bg-white/10 transition rounded-lg px-4 py-3 text-left"
-            >
-              <item.icon size={18} className="text-emerald-400" />
-              <span className="text-sm">{item.label}</span>
-            </button>
-          ))}
-        </div>
+        {/* Sin menú inferior de opciones */}
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { PostEntity } from '@infrastructure/database/mysql/entities/post.entity'
 import { CommentEntity } from '@infrastructure/database/mysql/entities/comment.entity';
 import { LikeEntity } from '@infrastructure/database/mysql/entities/like.entity';
 import { MediaEntity } from '@infrastructure/database/mysql/entities/media.entity';
+import { BoardPostEntity } from '@infrastructure/database/mysql/entities/board-post.entity';
 import { PostRepository } from '@domain/post/repositories/post.repository';
 import { PostRepositoryImpl } from '@infrastructure/database/mysql/repositories/post.repository.impl';
 import { PostMapper } from '@application/post/mappers/post.mapper';
@@ -16,11 +17,12 @@ import { DeletePostHandler } from '@application/post/commands/delete-post.handle
 import { GetPostHandler } from '@application/post/queries/get-post.handler';
 import { GetUserPostsHandler } from '@application/post/queries/get-user-posts.handler';
 import { GetFeedHandler } from '@application/post/queries/get-feed.handler';
+import { GetSavedPostsHandler } from '@application/post/queries/get-saved-posts.handler';
 import { MediaService } from '@modules/post/services/media.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([PostEntity, CommentEntity, LikeEntity, MediaEntity]),
+    TypeOrmModule.forFeature([PostEntity, CommentEntity, LikeEntity, MediaEntity, BoardPostEntity]),
     CqrsModule,
   ],
   controllers: [],
@@ -34,10 +36,12 @@ import { MediaService } from '@modules/post/services/media.service';
     GetPostHandler,
     GetUserPostsHandler,
     GetFeedHandler,
+    GetSavedPostsHandler,
   ],
   exports: [
     'PostRepository',
     PostMapper,
+    MediaService,
   ],
 })
 export class PostModule {}

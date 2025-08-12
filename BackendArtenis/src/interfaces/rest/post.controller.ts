@@ -30,6 +30,7 @@ import { DeletePostCommand } from '@application/post/commands/delete-post.comman
 import { GetPostQuery } from '@application/post/queries/get-post.query';
 import { GetUserPostsQuery } from '@application/post/queries/get-user-posts.query';
 import { GetFeedQuery } from '@application/post/queries/get-feed.query';
+import { GetSavedPostsQuery } from '@application/post/queries/get-saved-posts.query';
 
 // DTOs
 import { CreatePostDto } from './dto/create-post.dto';
@@ -175,6 +176,25 @@ export class PostController {
     const query = new GetPostQuery(id);
     const post = await this.queryBus.execute(query);
     return this.postMapper.toResponseDto(post);
+  }
+
+  @Get('me/saved')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Obtener posts guardados (paginado)' })
+  async getSaved(
+    @CurrentUser() user: any,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 24,
+  ) {
+    const result = await this.queryBus.execute(new GetSavedPostsQuery(user.id, { page, limit }));
+    return {
+      posts: result.posts.map((p) => this.postMapper.toResponseDto(p)),
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
+    };
   }
 
   @Put(':id')

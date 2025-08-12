@@ -71,6 +71,7 @@ export abstract class PostRepository {
   abstract getRecentPosts(pagination: PaginationOptions): Promise<PostsResult>;
   abstract getPostsByStyle(style: string, pagination: PaginationOptions): Promise<PostsResult>;
   abstract getPostsByLocation(location: string, pagination: PaginationOptions): Promise<PostsResult>;
+  abstract getSavedPosts(userId: string, pagination: PaginationOptions): Promise<PostsResult>;
 
   // Métodos de escritura
   abstract create(data: CreatePostData): Promise<Post>;

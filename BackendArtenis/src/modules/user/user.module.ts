@@ -32,6 +32,7 @@ import { UserController } from '@interfaces/rest/user.controller';
 
 // Importar AuthModule para AuthService
 import { AuthModule } from '@modules/auth/auth.module';
+import { PostModule } from '@modules/post/post.module';
 
 // Importar repositorio de Follow
 import { FollowRepository } from '@domain/user/repositories/follow.repository';
@@ -58,6 +59,7 @@ const QueryHandlers = [
     TypeOrmModule.forFeature([UserEntity, FollowEntity, ArtistEntity]),
     CqrsModule,
     forwardRef(() => AuthModule),
+    PostModule,
   ],
   controllers: [UserController],
   providers: [

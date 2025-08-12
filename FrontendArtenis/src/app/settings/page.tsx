@@ -15,6 +15,7 @@ export default function SettingsPage() {
   const [language, setLanguage] = useState(user?.language || 'es');
   const [role, setRole] = useState<'user' | 'artist' | 'admin'>((user?.role as any) || 'user');
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const onSave = async () => {
     setSaving(true);
@@ -24,6 +25,27 @@ export default function SettingsPage() {
       router.push('/profile');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const onAvatarChange: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+    if (!e.target.files?.[0]) return;
+    const form = new FormData();
+    form.append('file', e.target.files[0]);
+    setUploading(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1'}/users/avatar`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('artenis_token') || ''}`,
+        },
+        body: form,
+      });
+      const data = await res.json();
+      const wrapped = data?.data ?? data;
+      updateUser(wrapped);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -38,6 +60,13 @@ export default function SettingsPage() {
         <h2 className="text-2xl font-semibold mb-4">Configuración</h2>
 
         <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <img src={user?.avatar || '/favicon.ico'} alt="avatar" className="w-16 h-16 rounded-full object-cover" />
+            <label className="inline-flex items-center gap-2 cursor-pointer">
+              <input type="file" accept="image/*" onChange={onAvatarChange} className="hidden" />
+              <span className="px-3 py-2 rounded bg-white/10">{uploading ? 'Subiendo…' : 'Cambiar avatar'}</span>
+            </label>
+          </div>
           <div>
             <label className="block text-sm mb-1">Nombre</label>
             <input value={firstName} onChange={(e)=>setFirstName(e.target.value)} className="w-full rounded bg-white/10 px-3 py-2 outline-none" />

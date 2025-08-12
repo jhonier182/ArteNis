@@ -10,9 +10,12 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
@@ -37,6 +40,7 @@ import { UserResponseDto } from './dto/user-response.dto';
 
 // Mappers
 import { UserMapper } from '@application/user/mappers/user.mapper';
+import { MediaService } from '@modules/post/services/media.service';
 
 @ApiTags('users')
 @Controller('users')
@@ -45,6 +49,7 @@ export class UserController {
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
     private readonly userMapper: UserMapper,
+    private readonly mediaService: MediaService,
   ) {}
 
   @Public()
@@ -310,5 +315,28 @@ export class UserController {
     // await this.commandBus.execute(command);
     
     return { message: 'Usuario eliminado exitosamente' };
+  }
+
+  @Post('avatar')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Actualizar avatar' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { file: { type: 'string', format: 'binary' } },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Avatar actualizado', type: UserResponseDto })
+  async uploadAvatar(
+    @CurrentUser() currentUser: any,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<UserResponseDto> {
+    const url = await this.mediaService.uploadProfileImage(file, currentUser.id);
+    const command = new UpdateUserCommand(currentUser.id, undefined, undefined, undefined, url);
+    const user = await this.commandBus.execute(command);
+    return this.userMapper.toResponseDto(user);
   }
 }
