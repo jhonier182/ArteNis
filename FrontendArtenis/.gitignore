@@ -1,0 +1,40 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json.*
+
+# Next.js
+.next/
+.next/cache/
+out/
+.vercel/
+.turbo/
+
+# Build / cobertura
+coverage/
+.nyc_output/
+
+# Entorno
+.env
+.env.local
+.env.development.local
+.env.production.local
+.env.test.local
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+
+# IDE/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+
