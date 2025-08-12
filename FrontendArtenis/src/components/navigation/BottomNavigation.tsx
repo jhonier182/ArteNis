@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Home, Search, Plus, Grid3X3, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -18,6 +19,12 @@ const tabs = [
 ];
 
 export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
+  const router = useRouter();
+  const handleNav = (id: string) => {
+    if (id === 'home') router.push('/');
+    else if (id === 'profile') router.push('/profile');
+    else onTabChange?.(id);
+  };
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-black">
       <div className="max-w-md mx-auto">
@@ -31,7 +38,7 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
               return (
                 <motion.button
                   key={tab.id}
-                  onClick={() => onTabChange(tab.id)}
+                  onClick={() => handleNav(tab.id)}
                   className="flex flex-col items-center justify-center p-2"
                   whileTap={{ scale: 0.95 }}
                 >
@@ -45,7 +52,7 @@ export function BottomNavigation({ activeTab, onTabChange }: BottomNavigationPro
             return (
               <motion.button
                 key={tab.id}
-                onClick={() => onTabChange(tab.id)}
+                onClick={() => handleNav(tab.id)}
                 className="flex flex-col items-center justify-center p-2 min-w-[60px]"
                 whileTap={{ scale: 0.95 }}
               >

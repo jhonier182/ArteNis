@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsDateString, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, IsDateString, IsIn } from 'class-validator';
 
 export class UpdateUserDto {
   @ApiProperty({
@@ -79,4 +79,13 @@ export class UpdateUserDto {
       allowMessages?: boolean;
     };
   };
+
+  @ApiProperty({
+    description: 'Rol del usuario',
+    enum: ['user', 'artist', 'admin'],
+    required: false,
+  })
+  @IsOptional()
+  @IsIn(['user', 'artist', 'admin'])
+  role?: string;
 }

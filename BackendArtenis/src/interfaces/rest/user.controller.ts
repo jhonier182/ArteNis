@@ -139,6 +139,7 @@ export class UserController {
       updateUserDto.avatar,
       updateUserDto.phone,
       updateUserDto.preferences,
+      updateUserDto.role,
     );
     const user = await this.commandBus.execute(command);
     return this.userMapper.toResponseDto(user);

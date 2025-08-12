@@ -21,5 +21,6 @@ export class UpdateUserCommand {
         allowMessages?: boolean;
       };
     },
+    public readonly role?: string,
   ) {}
 }

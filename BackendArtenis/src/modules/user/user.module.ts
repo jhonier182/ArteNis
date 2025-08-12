@@ -5,6 +5,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 // Entidades de infraestructura
 import { UserEntity } from '@infrastructure/database/mysql/entities/user.entity';
 import { FollowEntity } from '@infrastructure/database/mysql/entities/follow.entity';
+import { ArtistEntity } from '@infrastructure/database/mysql/entities/artist.entity';
 
 // Repositorios
 import { UserRepository } from '@domain/user/repositories/user.repository';
@@ -35,6 +36,8 @@ import { AuthModule } from '@modules/auth/auth.module';
 // Importar repositorio de Follow
 import { FollowRepository } from '@domain/user/repositories/follow.repository';
 import { FollowRepositoryImpl } from '@infrastructure/database/mysql/repositories/follow.repository.impl';
+import { ArtistRepository } from '@domain/artist/repositories/artist.repository';
+import { ArtistRepositoryImpl } from '@infrastructure/database/mysql/repositories/artist.repository.impl';
 
 const CommandHandlers = [
   CreateUserHandler,
@@ -52,7 +55,7 @@ const QueryHandlers = [
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, FollowEntity]),
+    TypeOrmModule.forFeature([UserEntity, FollowEntity, ArtistEntity]),
     CqrsModule,
     forwardRef(() => AuthModule),
   ],
@@ -66,6 +69,10 @@ const QueryHandlers = [
     {
       provide: 'FollowRepository',
       useClass: FollowRepositoryImpl,
+    },
+    {
+      provide: 'ArtistRepository',
+      useClass: ArtistRepositoryImpl,
     },
     
     // Servicios de dominio

@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from '@/components/providers/Providers';
 import { Toaster } from '@/components/ui/Toaster';
-import { Navigation } from '@/components/navigation/Navigation';
 
 export const metadata: Metadata = {
   title: {
@@ -109,9 +108,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
       >
         <Providers>
           <div className="relative flex min-h-screen flex-col">
-            {/* Navigation */}
-            <Navigation />
-            
             {/* Main content */}
             <main className="flex-1 relative">
               {children}
